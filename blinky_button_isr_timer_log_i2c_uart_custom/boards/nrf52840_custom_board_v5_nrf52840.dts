@@ -1,0 +1,123 @@
+/*
+ * Copyright (c) 2017 Linaro Limited
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <nordic/nrf52840_qiaa.dtsi>
+#include <nordic/nrf52840_partition.dtsi>
+#include "nrf52840_custom_board_v5_nrf52840-pinctrl.dtsi"
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "Nrf52840 Custom Board v5";
+	compatible = "nordic,nrf52840-custom-board-v5-nrf52840";
+
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,uart-mcumgr = &uart0;
+		zephyr,bt-mon-uart = &uart0;
+		zephyr,bt-c2h-uart = &uart0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led0: led_0 {
+			gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
+		};
+		led1: led_1 {
+			gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+		button_boot: button_0 {
+			gpios = <&gpio0 11 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Push button switch 0 - boot";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+
+		button_one: button_1 {
+			gpios = <&gpio0 24 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;				//DK
+			//gpios = <&gpio0 12 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;				//MUPT
+			label = "Push button switch 1";
+			zephyr,code = <INPUT_KEY_1>;
+		};
+
+		button_two: button_2 {
+			gpios = <&gpio0 25 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;				//DK
+			//gpios = <&gpio0 26 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;				//MUPT
+			label = "Push button switch 2";
+			zephyr,code = <INPUT_KEY_2>;
+		};
+
+	};
+
+	/* These aliases are provided for compatibility with samples */
+	aliases {
+		led0 = &led0;
+		led1 = &led1;
+		bootloader-led0 = &led0;
+		mcuboot-button0 = &button_boot;
+		button1 = &button_one;				//sw1
+		button2 = &button_two;				//sw2
+//		bmp280alias = &bmp280_sensor;
+		mcuboot-led0 = &led0;
+		watchdog0 = &wdt0;
+	};
+};
+
+&reg0 {
+	status = "okay";
+};
+
+&reg1 {
+	regulator-initial-mode = <NRF5X_REG_MODE_DCDC>;
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&uart0 {
+	compatible = "nordic,nrf-uarte";
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-1 = <&uart0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&uart1 {
+	compatible = "nordic,nrf-uarte";
+	status = "okay";
+	current-speed = <9600>;
+	parity = "none";
+	stop-bits = "1";
+	data-bits = < 8 >;
+	pinctrl-0 = <&uart1_default>;
+	pinctrl-1 = <&uart1_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&i2c0 {
+	compatible = "nordic,nrf-twim";				//we set i2c master
+	status = "okay";							//enable driver
+	pinctrl-0 = <&i2c0_default>;
+	pinctrl-1 = <&i2c0_sleep>;
+	pinctrl-names = "default", "sleep";			//assign the pins to the device state
+	clock-frequency = <100000>;					//set 100kb, standard i2c speed
+	bmp280_sensor: bmp280_sensor@77{			//add bmp280 as node and the cell address - cell address must be the same as the reg value!
+		compatible = "i2c-device";				//set the node type
+		reg = < 0x77 >;							//this is the sensor address
+		label ="BMP280";						//label for giggles
+	};
+	
+};
+
+&gpiote {
+	status = "okay";
+};
