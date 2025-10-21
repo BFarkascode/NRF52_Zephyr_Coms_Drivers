@@ -45,6 +45,7 @@ Lastly, when defining the node for the sensor, the sensor node’s “@” value
 
 ### …and the devtree fights back in a very-very dumb way
 I came across yet again the same problem as before where certain pins were simply not working for me on my DK. I already guessed that a good number of pins might actually be blocked by external components on the board and that may be the source of my problem.
+
 The solution was a lot simpler than I thought: I merely had to turn the DK board upside down! There all the pins that are in use by the devboard are marked clearly. Suffice to say, if one wants to use those, the output will not be what is expected, as I have found out myself the hard way…
 
 ### Driver names
@@ -54,13 +55,21 @@ Anyway, just be very cautious about what driver you are using – or in what sta
 
 ## To read
 Macro information can be searched here:
+
 https://docs.nordicsemi.com/bundle/zephyr-apis-latest/page/index.html
+
 Pin distro (or lack thereof):
+
 https://docs.nordicsemi.com/bundle/ps_nrf52840/page/pin.html
+
 Pin functions:
+
 https://docs.nordicsemi.com/bundle/zephyr-apis-latest/page/nrf-pinctrl_8h.html
+
 Lastly, here is the github of Nordic where some of the exercises I have used as guidelines can be found:
+
 https://github.com/NordicDeveloperAcademy
+
 I recommend this later quite a bit, especially if someone finds my source code and devtree definition hard to follow (like myself sometimes).
 
 ## Particularities
@@ -105,7 +114,7 @@ Instead, we will set up serial communications using uart1. To write up the basic
 -	“pinctrl_0” and “pinctrl_names” should be defined and follow the same naming convention as uart0
 -	“current-speed” will be the baud rate, which should match the baud rate on the external bus we intend to interface with (no master-slave setup here, so the bus must be aligned “by hand”)
 -	“status” should be “okay” to enable the driver (in Kconfig, it already should be enabled, thanks to the printk project in the previous repo)
--	
+
 With the required “pinctrl” set, we will need to do assign the pin distro, so within the pinctrl.dtsi file we have, we will have to add uart1.
 
 With these set, we will be able to communicate on the bus already at the requested baud rate – here it will be 9600 bdp.
@@ -133,7 +142,7 @@ From the event, all types should be self-explanatory, except maybe the “BUF”
 
 Of note, we will add a timeout on the rx in order to “guesstimate”, where the incoming uart frame must have ended. This is set in the uart’s enable macro and can be any time frame, infinity included using “SYS_FOREVER_US”.
 
-IMPORTANT: there is a known bug in the handling of the Rx buffer where the timeout detection just doesn’t seem to work well. The solution has been to increase the timeout way above reasonable levels, but without putting it to infinity (see here: Bug in nRF UARTE driver, async Rx buffer handling - Nordic Q&A - Nordic DevZone - Nordic DevZone). If not set, RX_RDY event will be activated haphazardly. I gave “10000” as timeout. Mind, leaving it at infinity will mean that we are not using the timeout in the rx, i.e. RX_RDY will only trigger if the buffer is full. This option should only be used if we know prior to the message is received, how long it is supposed to be (likely not the case).
+IMPORTANT: there is a known bug in the handling of the Rx buffer where the timeout detection just doesn’t seem to work well. The solution has been to increase the timeout way above reasonable levels, but without putting it to infinity (see here: (https://devzone.nordicsemi.com/f/nordic-q-a/123888/bug-in-nrf-uarte-driver-async-rx-buffer-handling). If not set, RX_RDY event will be activated haphazardly. I gave “10000” as timeout. Mind, leaving it at infinity will mean that we are not using the timeout in the rx, i.e. RX_RDY will only trigger if the buffer is full. This option should only be used if we know prior to the message is received, how long it is supposed to be (likely not the case).
 
 #### Summary
 Code section: we have added an external uart communications to our code from before. We will be waiting for an incoming message on the bus, print out the buffer on the DK’s terminal and then send an acknowledge back on the bus to the source.
@@ -194,4 +203,5 @@ A short description on what is going on in each project elements was provided ab
 
 ## Conclusion
 Here we have implemented the three standard com peripherals using Zephyr. Making good use of other simple peripherals such as PWM or ADC or RTC or QSPI should be rather straight forwards and would demand of me repeating what I have presented here so I won’t make a repo on them. At any case, anyone getting a grip of Zephyr enough to arrive here should have no issue making these other peripherals work.
+
 Next, we will implement a BLE server on the nrf52.
